@@ -1,0 +1,16 @@
+[package]
+name = "lapras"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+env_logger = "0.11.6"
+flate2 = "1.0.35"
+log = "0.4.22"
+reqwest = { version = "0.12.12", features = ["blocking", "json"] }
+rustls = "0.23.20"
+aws-lc-rs = { version = "1.0.0-rc1" }
+serde = { version = "1.0.216", features = ["derive"] }
+tar = "0.4.43"
+systemstat = "0.2.4"
+
