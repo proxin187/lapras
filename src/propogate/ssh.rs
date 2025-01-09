@@ -1,6 +1,7 @@
 use std::process::Command;
+use std::fs;
 
-// TODO: connect to ssh over local host in order to create realistic enviroment
+// TODO: maybe we should consider just having a script do this?
 
 
 pub struct Session {
@@ -12,9 +13,18 @@ impl Session {
 }
 
 pub struct Ssh {
+    keys: Vec<String>,
 }
 
 impl Ssh {
+    pub fn new() -> Ssh {
+        Ssh {
+            keys: Vec::new(),
+        }
+    }
+
+    pub fn find_keys(&mut self) {
+    }
 }
 
 
