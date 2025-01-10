@@ -1,7 +1,6 @@
 use std::process::Command;
+use std::path::PathBuf;
 use std::fs;
-
-// TODO: maybe we should consider just having a script do this?
 
 
 pub struct Session {
@@ -13,17 +12,25 @@ impl Session {
 }
 
 pub struct Ssh {
-    keys: Vec<String>,
+    keys: Vec<PathBuf>,
 }
 
 impl Ssh {
     pub fn new() -> Ssh {
-        Ssh {
-            keys: Vec::new(),
-        }
-    }
+        let rsa_id = ["/root/id_rsa*", "/root/**/id_rsa*", "/root/**/**/id_rsa*"].iter()
+            .filter_map(|wildcard| {
+                glob::glob(&wildcard)
+                    .ok()
+                    .map(|paths| paths.filter_map(|entry| entry.ok()).collect::<Vec<PathBuf>>())
+            })
+            .flatten()
+            .collect::<Vec<PathBuf>>();
 
-    pub fn find_keys(&mut self) {
+        // TODO: detect more keys
+
+        Ssh {
+            keys: [rsa_id].concat(),
+        }
     }
 }
 

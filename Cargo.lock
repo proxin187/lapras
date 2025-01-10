@@ -829,6 +829,7 @@ dependencies = [
  "aws-lc-rs",
  "env_logger",
  "flate2",
+ "glob",
  "log",
  "reqwest",
  "rustls",
