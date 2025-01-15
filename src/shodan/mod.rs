@@ -2,6 +2,8 @@ use reqwest::blocking::Client;
 use serde::Deserialize;
 use log::{info, warn};
 
+use std::time::Duration;
+
 
 #[derive(Debug, Deserialize)]
 pub struct Host {
@@ -45,7 +47,7 @@ impl Shodan {
         let url = format!("https://api.shodan.io/shodan/host/search?key={}&query={}&page={}&facets=country", self.key, query, page);
 
         loop {
-            match self.client.get(&url).send().and_then(|response| response.json::<Response>()) {
+            match self.client.get(&url).timeout(Duration::from_secs(60)).send().and_then(|response| response.json::<Response>()) {
                 Ok(response) => match response {
                     Response::Success { search } => {
                         info!("search successful");

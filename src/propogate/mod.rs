@@ -1,5 +1,4 @@
 mod http;
-mod ssh;
 
 use crate::shodan::Shodan;
 

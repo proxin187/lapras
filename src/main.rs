@@ -1,6 +1,6 @@
 mod persistance;
 mod propogate;
-mod network;
+mod update;
 mod shodan;
 mod miner;
 mod mutex;
@@ -13,7 +13,6 @@ use log::{info, warn};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     Builder::from_env(Env::default().default_filter_or("info")).init();
-
 
     match mutex::lock() {
         Some(_) => {
