@@ -3,6 +3,18 @@ name = "lapras"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "client"
+path = "src/client/main.rs"
+
+[[bin]]
+name = "server"
+path = "src/server/main.rs"
+
+[lib]
+name = "protocol"
+path = "src/protocol/lib.rs"
+
 [dependencies]
 env_logger = "0.11.6"
 flate2 = "1.0.35"

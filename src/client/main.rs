@@ -1,5 +1,6 @@
 mod persistance;
 mod propogate;
+mod network;
 mod update;
 mod shodan;
 mod miner;
