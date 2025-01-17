@@ -1,9 +1,11 @@
 use serde::{Serialize, Deserialize};
+use clap::Subcommand;
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Subcommand, Serialize, Deserialize)]
 pub enum Message {
     Update {
+        url: String,
     },
 }
 
