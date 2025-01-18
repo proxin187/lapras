@@ -1,9 +1,8 @@
-use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
-use std::io::Write;
+use std::net::TcpListener;
 use std::thread;
 
-use protocol::Message;
+use protocol::{Message, Stream};
 use rustyline::DefaultEditor;
 use log::{info, warn};
 use clap::{Parser, Subcommand};
@@ -30,26 +29,8 @@ pub enum Command {
     List,
 }
 
-pub struct Client {
-    stream: TcpStream,
-}
-
-impl Client {
-    pub fn new(stream: TcpStream) -> Client {
-        Client {
-            stream,
-        }
-    }
-
-    pub fn send(&mut self, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = serde_json::to_vec(message)?;
-
-        self.stream.write_all(&bytes).map_err(|err| err.into())
-    }
-}
-
 pub struct Controller {
-    clients: Arc<Mutex<Vec<Client>>>,
+    clients: Arc<Mutex<Vec<Stream>>>,
 }
 
 impl Controller {
@@ -66,7 +47,7 @@ impl Controller {
 
                 for client in lock!(self.clients)?.iter_mut() {
                     if let Err(err) = client.send(&message) {
-                        warn!("failed to send {}, {}", client.stream.peer_addr()?, err);
+                        warn!("failed to send {}, {}", client.peer_addr()?, err);
                     }
                 }
 
@@ -76,7 +57,7 @@ impl Controller {
                 let lock = lock!(self.clients)?;
 
                 for client in lock.iter() {
-                    info!("addr: {}", client.stream.peer_addr()?);
+                    info!("addr: {}", client.peer_addr()?);
                 }
 
                 info!("total {} clients", lock.len());
@@ -121,15 +102,17 @@ impl Controller {
     }
 }
 
-fn listen(clients: Arc<Mutex<Vec<Client>>>) -> Result<(), Box<dyn std::error::Error>> {
-    let listener = TcpListener::bind("127.0.0.1:8787")?;
+fn listen(clients: Arc<Mutex<Vec<Stream>>>) -> Result<(), Box<dyn std::error::Error>> {
+    let listener = TcpListener::bind("127.0.0.1:8080")?;
 
     thread::spawn(move || {
         for incoming in listener.incoming() {
-            if let Ok(stream) = incoming {
-                let client = Client::new(stream);
+            if let Ok((stream, mut clients)) = incoming.map_err(|err| err.into()).and_then(|incoming| lock!(clients).map(|clients| (incoming, clients))) {
+                let stream = Stream::new(stream);
 
-                let _ = lock!(clients).map(|mut clients| clients.push(client));
+                if !clients.contains(&stream) {
+                    clients.push(stream);
+                }
             }
         }
     });

