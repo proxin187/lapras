@@ -26,6 +26,7 @@ pub enum Command {
         #[command(subcommand)]
         message: Message,
     },
+    Reload,
     List,
 }
 
@@ -53,11 +54,27 @@ impl Controller {
 
                 info!("done");
             },
+            Command::Reload => {
+                let mut lock = lock!(self.clients)?;
+
+                let clients = lock.len();
+
+                lock.retain(|client| client.send(&Message::Ping).is_ok());
+
+                info!("removed {} disconnected clients", clients - lock.len());
+            },
             Command::List => {
                 let lock = lock!(self.clients)?;
 
                 for client in lock.iter() {
-                    info!("addr: {}", client.peer_addr()?);
+                    match client.peer_addr() {
+                        Ok(addr) => {
+                            info!("addr: {}", addr);
+                        },
+                        Err(err) => {
+                            warn!("failed to get address: {}", err);
+                        },
+                    }
                 }
 
                 info!("total {} clients", lock.len());
@@ -67,8 +84,18 @@ impl Controller {
         Ok(())
     }
 
+    fn shutdown(&self) -> Result<(), Box<dyn std::error::Error>> {
+        for client in lock!(self.clients)?.iter() {
+            let _ = client.shutdown();
+        }
+
+        Ok(())
+    }
+
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         listen(self.clients.clone())?;
+
+        println!("{}", Cli::try_parse_from::<[String; 0], String>([]).unwrap_err());
 
         let mut rl = DefaultEditor::new()?;
 
@@ -91,6 +118,8 @@ impl Controller {
                     }
                 },
                 Err(err) => {
+                    self.shutdown()?;
+
                     warn!("failed to readline: {}", err);
 
                     break;
@@ -110,9 +139,7 @@ fn listen(clients: Arc<Mutex<Vec<Stream>>>) -> Result<(), Box<dyn std::error::Er
             if let Ok((stream, mut clients)) = incoming.map_err(|err| err.into()).and_then(|incoming| lock!(clients).map(|clients| (incoming, clients))) {
                 let stream = Stream::new(stream);
 
-                if !clients.contains(&stream) {
-                    clients.push(stream);
-                }
+                clients.push(stream);
             }
         }
     });

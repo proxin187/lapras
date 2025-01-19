@@ -49,10 +49,19 @@ impl Network {
             Message::Update { url } => {
                 self.should_close.store(true, Ordering::Relaxed);
             },
+            Message::Ping => {
+                info!("recieved ping");
+            },
         }
     }
 
-    pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    fn shutdown(&mut self) {
+        if let Some(stream) = &mut self.stream {
+            let _ = stream.shutdown();
+        }
+    }
+
+    pub fn run(&mut self) {
         while !self.should_close.load(Ordering::Relaxed) {
             match &mut self.stream {
                 Some(stream) => match stream.recv() {
@@ -71,7 +80,7 @@ impl Network {
             }
         }
 
-        Ok(())
+        self.shutdown()
     }
 }
 

