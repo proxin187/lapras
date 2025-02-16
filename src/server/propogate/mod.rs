@@ -36,11 +36,11 @@ impl Propogate {
 
     pub fn run(&mut self) {
         for exploit in self.exploits.iter() {
-            let mut page = 0;
+            let mut page = 1;
 
             info!("searching for vulnerable {} servers", exploit.query);
 
-            while let Some(search) = self.shodan.search(&exploit.query, page) {
+            while let Some(search) = self.shodan.search(&exploit.query, &mut page) {
                 info!("shodan searching {} hosts, page {}/{}", search.total, page, search.total / 100);
 
                 for host in search.hosts {

@@ -43,10 +43,10 @@ impl Shodan {
         }
     }
 
-    pub fn search(&self, query: &str, page: usize) -> Option<Search> {
-        let url = format!("https://api.shodan.io/shodan/host/search?key={}&query={}&page={}&facets=country", self.key, query, page);
-
+    pub fn search(&self, query: &str, page: &mut usize) -> Option<Search> {
         loop {
+            let url = format!("https://api.shodan.io/shodan/host/search?key={}&query={}&page={}&facets=country", self.key, query, *page);
+
             match self.client.get(&url).timeout(Duration::from_secs(60)).send().and_then(|response| response.json()) {
                 Ok(response) => match response {
                     Response::Success { search } => {
@@ -61,7 +61,9 @@ impl Shodan {
                     },
                 },
                 Err(err) => {
-                    warn!("reqwest failed with `{}`, trying again", err);
+                    warn!("reqwest failed with `{}`, trying next", err);
+
+                    *page += 1;
                 },
             }
         }

